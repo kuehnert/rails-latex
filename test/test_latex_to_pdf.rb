@@ -2,7 +2,7 @@ require 'helper'
 require 'erb_latex'
 require 'ostruct'
 
-Rails=OpenStruct.new(:root => TMP_DIR=File.expand_path("../tmp",__FILE__))
+Rails = OpenStruct.new(:root => TMP_DIR = File.expand_path("../tmp", __FILE__))
 
 class TestLatexToPdf < Test::Unit::TestCase
   def test_escape
@@ -14,8 +14,8 @@ class TestLatexToPdf < Test::Unit::TestCase
 
   def test_generate_pdf
     FileUtils.mkdir_p(TMP_DIR)
-    File.open(pdf_file=File.join(TMP_DIR,'out.pdf'),'wb') do |wio|
-      wio.write(LatexToPdf.generate_pdf(IO.read(File.expand_path('../test_doc.tex',__FILE__))))
+    File.open(pdf_file=File.join(TMP_DIR, 'out.pdf'), 'wb') do |wio|
+      wio.write(LatexToPdf.generate_pdf(IO.read(File.expand_path('../test_doc.tex', __FILE__))))
     end
     assert_equal "hello world\n\n1\n\n\f", `pdftotext #{pdf_file} -`
 
