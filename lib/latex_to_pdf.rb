@@ -1,74 +1,76 @@
 class LatexToPdf
-  @options = { tex_path: '/usr/bin', tex_engine: 'pdflatex', parse_twice: false }
+  class << self
+    @options = { tex_path: '/usr/bin', tex_engine: 'pdflatex', parse_twice: false }
 
-  # Converts a string of LaTeX +code+ into a binary string of PDF.
-  #
-  # pdflatex is used to convert the file and creates the directory +#{Rails.root}/tmp/rails-latex+ to store intermediate
-  # files.
-  def self.generate_pdf(code, options = {})
-    options.reverse_merge @options
+    # Converts a string of LaTeX +code+ into a binary string of PDF.
+    #
+    # pdflatex is used to convert the file and creates the directory +#{Rails.root}/tmp/rails-latex+ to store intermediate
+    # files.
+    def generate_pdf(code, options = {})
+      options.reverse_merge @options
 
-    dir   = File.join(Rails.root, 'tmp', 'rails-latex', "#{Process.pid}-#{Thread.current.hash}")
-    input = File.join(dir, 'input.tex')
-    FileUtils.mkdir_p(dir)
+      dir   = File.join(Rails.root, 'tmp', 'rails-latex', "#{Process.pid}-#{Thread.current.hash}")
+      input = File.join(dir, 'input.tex')
+      FileUtils.mkdir_p(dir)
 
-    File.open(input, 'wb') {|io| io.write(code) }
-    tex_command = File.join(options[:tex_path], options[:tex_engine])
-    (options[:parse_twice] ? 2 : 1).times {
-      `#{tex_command} -output-directory #{dir} -interaction batchmode #{input}`
-      # :umask => 7, :out => :close, :err => :close, :in => :close) # not supported in ruby 1.8
-    }
-    FileUtils.mv( input.sub(/\.tex$/, '.log'), File.join(dir, '..', 'input.log') )
+      File.open(input, 'wb') {|io| io.write(code) }
+      tex_command = File.join(options[:tex_path], options[:tex_engine])
+      (options[:parse_twice] ? 2 : 1).times {
+        `#{tex_command} -output-directory #{dir} -interaction batchmode #{input}`
+        # :umask => 7, :out => :close, :err => :close, :in => :close) # not supported in ruby 1.8
+      }
+      FileUtils.mv( input.sub(/\.tex$/, '.log'), File.join(dir, '..', 'input.log') )
 
-    if File.exist?( pdf_file = input.sub(/\.tex$/, '.pdf') )
-      result = File.read(pdf_file)
-      FileUtils.rm_rf(dir)
-    else
-      raise "pdflatex failed: See #{input.sub(/\.tex$/, '.log')} for details"
-    end
-    result
-  end
-
-  # Escapes LaTex special characters in text so that they wont be interpreted as LaTex commands.
-  #
-  # This method will use RedCloth to do the escaping if available.
-  def self.escape_latex(text)
-    # :stopdoc:
-    unless @latex_escaper
-      if defined?(RedCloth::Formatters::LATEX)
-        class << (@latex_escaper=RedCloth.new(''))
-          include RedCloth::Formatters::LATEX
-        end
+      if File.exist?( pdf_file = input.sub(/\.tex$/, '.pdf') )
+        result = File.read(pdf_file)
+        FileUtils.rm_rf(dir)
       else
-        class << (@latex_escaper=Object.new)
-          ESCAPE_RE=/([{}_$&%#])|([\\^~|<>])/
-          ESC_MAP={
-            '\\' => 'backslash',
-            '^' => 'asciicircum',
-            '~' => 'asciitilde',
-            '|' => 'bar',
-            '<' => 'less',
-            '>' => 'greater',
-          }
+        raise "pdflatex failed: See #{input.sub(/\.tex$/, '.log')} for details"
+      end
+      result
+    end
 
-          def latex_esc(text)   # :nodoc:
-            text.gsub(ESCAPE_RE) {|m|
-              if $1
-                "\\#{m}"
-              else
-                "\\text#{ESC_MAP[m]}{}"
-              end
+    # Escapes LaTex special characters in text so that they wont be interpreted as LaTex commands.
+    #
+    # This method will use RedCloth to do the escaping if available.
+    def escape_latex(text)
+      # :stopdoc:
+      unless @latex_escaper
+        if defined?(RedCloth::Formatters::LATEX)
+          class << (@latex_escaper=RedCloth.new(''))
+            include RedCloth::Formatters::LATEX
+          end
+        else
+          class << (@latex_escaper=Object.new)
+            ESCAPE_RE=/([{}_$&%#])|([\\^~|<>])/
+            ESC_MAP={
+              '\\' => 'backslash',
+              '^' => 'asciicircum',
+              '~' => 'asciitilde',
+              '|' => 'bar',
+              '<' => 'less',
+              '>' => 'greater',
             }
+
+            def latex_esc(text)   # :nodoc:
+              text.gsub(ESCAPE_RE) {|m|
+                if $1
+                  "\\#{m}"
+                else
+                  "\\text#{ESC_MAP[m]}{}"
+                end
+              }
+            end
           end
         end
+        # :startdoc:
       end
-      # :startdoc:
+
+      @latex_escaper.latex_esc(text.to_s).html_safe
     end
 
-    @latex_escaper.latex_esc(text.to_s).html_safe
+    def settings(options_hash)
+      @options.merge options_hash
+    end
   end
-end
-
-def settings(options_hash)
-  @options.merge options_hash
 end
