@@ -1,9 +1,16 @@
 = Rails-LaTeX
 
+* Git: http://github.com/kuehnert/rails-latex
+* Author: Matthias Kühnert
+* cloned from:
 * Git: http://github.com/jacott/rails-latex
 * Author: Geoff Jacobsen   
 * Copyright: 2009-2010    
 * License: MIT-LICENSE
+
+== Clone Info
+
+added a config hash that can be initialized with LatexToPdf.settings
 
 == Description
 
