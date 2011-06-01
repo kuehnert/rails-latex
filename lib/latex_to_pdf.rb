@@ -1,13 +1,13 @@
 class LatexToPdf
+  @@options = { tex_path: '/usr/bin', tex_engine: 'pdflatex', parse_twice: false }
   class << self
-    @options = { tex_path: '/usr/bin', tex_engine: 'pdflatex', parse_twice: false }
 
     # Converts a string of LaTeX +code+ into a binary string of PDF.
     #
     # pdflatex is used to convert the file and creates the directory +#{Rails.root}/tmp/rails-latex+ to store intermediate
     # files.
     def generate_pdf(code, options = {})
-      options.reverse_merge @options
+      options.reverse_merge @@options
 
       dir   = File.join(Rails.root, 'tmp', 'rails-latex', "#{Process.pid}-#{Thread.current.hash}")
       input = File.join(dir, 'input.tex')
@@ -70,7 +70,7 @@ class LatexToPdf
     end
 
     def settings(options_hash)
-      @options.merge options_hash
+      @@options.merge options_hash
     end
   end
 end
