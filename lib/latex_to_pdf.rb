@@ -1,3 +1,4 @@
+# encoding: utf-8
 class LatexToPdf
   @@options = { tex_path: '/usr/bin', tex_engine: 'pdflatex', parse_twice: false }
   class << self
