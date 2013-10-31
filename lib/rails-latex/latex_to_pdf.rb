@@ -27,8 +27,8 @@ class LatexToPdf
       fork do
         begin
           Dir.chdir dir
-          STDOUT.reopen("input.log","a")
-          STDERR.reopen(STDOUT)
+          # STDOUT.reopen("input.log","a")
+          # STDERR.reopen(STDOUT)
           args=config[:arguments] + %w[-shell-escape -interaction batchmode input.tex]
           system config[:command],'-draftmode',*args if parse_twice
           exec config[:command],*args
