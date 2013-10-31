@@ -1,0 +1,13 @@
+\documentclass{scrartcl}
+
+\usepackage{auto-pst-pdf}
+\usepackage{pst-barcode}
+\usepackage{hyperref}
+
+
+\begin{document}
+
+<%= yield %>
+
+\end{document}
+
